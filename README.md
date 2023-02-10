@@ -1,5 +1,7 @@
 # *BiFSMN: Binary Neural Network for Keyword Spotting*
 
+The code for [BiFSMNv2](https://github.com/htqin/BiFSMNv2) is [here](https://github.com/htqin/BiFSMNv2)! It can greatly improve the performance of BiFSMN.
+
 Created by [Haotong Qin](https://htqin.github.io/), Xudong Ma, [Yifu Ding](https://yifu-ding.github.io/), Xiaoyang Li, Yang Zhang, Yao Tian, Zejun Ma, Jie Luo, and [Xianglong Liu](https://xlliu-beihang.github.io/) from Beihang University and Bytedance AI Lab.
 
 ![loading-ag-172](./overview.png)
