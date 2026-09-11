@@ -1,14 +1,41 @@
-# *BiFSMN: Binary Neural Network for Keyword Spotting*
+# BiFSMN: Binary Neural Network for Keyword Spotting
 
-***The code for [BiFSMNv2](https://github.com/htqin/BiFSMNv2) is [here](https://github.com/htqin/BiFSMNv2)! It can greatly improve the performance of BiFSMN.***
+**IJCAI 2022 · pages 4346–4352**
+
+Haotong Qin, Xudong Ma, Yifu Ding, Xiaoyang Li, Yang Zhang, Yao Tian, Zejun Ma, Jie Luo, Xianglong Liu
+
+[Published paper](https://www.ijcai.org/proceedings/2022/603) | [PDF](https://www.ijcai.org/proceedings/2022/0603.pdf) | [Citation](#citation)
+
+**BiFSMN is a binary keyword-spotting network combining High-frequency Enhancement Distillation (HED), a Thinnable Binarization Architecture (TBA), and an ARMv8 Fast Bitwise Computation Kernel (FBCK).** It targets always-on speech recognition under edge-device compute and storage constraints.
+
+## Published results and scope
+
+Speech Commands classification accuracy (%) on the 12-class task. W/A denotes weights/activations in the binary network; sensitive full-precision operations are retained. The full, half, and quarter settings refer to the paper's thinnable architecture, not to weight bit-width.
+
+| Method / runtime setting | W/A | V1-12 accuracy | V2-12 accuracy |
+| --- | --- | --- | --- |
+| Full-precision reference | 32/32 | 97.93 | 98.05 |
+| BiFSMN, full | 1/1 | 95.03 | 94.86 |
+| BiFSMN, half | 1/1 | 94.87 | 94.73 |
+| BiFSMN, quarter | 1/1 | 94.48 | 94.63 |
+
+Source: Table 2. The full BiFSMN is 2.90 percentage points below the full-precision V1-12 reference. Figure 5 reports 34.7/22.9/16.9 ms for full/half/quarter with the proposed kernel, versus 377 ms for full precision. The reported **22.3× maximum speedup** applies to the **quarter** variant; the full model achieves approximately 10.9×. The **15.5× storage saving** is a parameter-storage ratio, not runtime memory reduction.
+
+### What this paper supports
+
+- HED emphasizes high-frequency teacher features during binarization-aware training (Section 3; Table 1).
+- TBA supports runtime accuracy/efficiency trade-offs without independently training every depth (Section 3; Tables 1–2).
+- On V1-12, full BiFSMN reaches 95.03% versus 86.81% for the IR-Net binarization baseline in this speech experiment (Table 2).
+- The approach is evaluated across 12-, 20-, and 35-class Speech Commands tasks and multiple architectures (Tables 2–3).
+- FBCK improves actual ARMv8 inference latency; theoretical FLOPs alone do not explain the deployment result (Section 4.3; Figure 5).
+
+The deployment experiment uses Raspberry Pi 3B+ with a 1.2 GHz ARMv8 Cortex-A53 CPU as described in the paper. These results depend on the optimized binary kernel and do not imply the same speedup on GPU/PyTorch. Training uses speech data and a full-precision teacher; it is not data-free PTQ. The tables above are paper results, not newly reproduced measurements.
 
 Created by [Haotong Qin](https://htqin.github.io/), Xudong Ma, [Yifu Ding](https://yifu-ding.github.io/), Xiaoyang Li, Yang Zhang, Yao Tian, Zejun Ma, Jie Luo, and [Xianglong Liu](https://xlliu-beihang.github.io/) from Beihang University and Bytedance AI Lab.
 
 ![loading-ag-172](./overview.png)
 
-## Introduction
-
-This project is the official implementation of our accepted IJCAI 2022 paper *BiFSMN: Binary Neural Network for Keyword Spotting* [[PDF](https://www.ijcai.org/proceedings/2022/0603.pdf)]. The deep neural networks, such as the Deep-FSMN, have been widely studied for keyword spotting (KWS) applications. However, computational resources for these networks are significantly constrained since they usually run on-call on edge devices. In this paper, we present **BiFSMN**, an accurate and extreme-efficient binary neural network for KWS. We first construct a *High-frequency Enhancement Distillation* scheme for the binarization-aware training, which emphasizes the high-frequency information from the full-precision network's representation that is more crucial for the optimization of the binarized network. Then, to allow the instant and adaptive accuracy-efficiency trade-offs at runtime, we also propose a *Thinnable Binarization Architecture* to further liberate the acceleration potential of the binarized network from the topology perspective. Moreover, we implement a *Fast Bitwise Computation Kernel* for BiFSMN on ARMv8 devices which fully utilizes registers and increases instruction throughput to push the limit of deployment efficiency. Extensive experiments show that BiFSMN outperforms existing binarization methods by convincing margins on various datasets and is even comparable with the full-precision counterpart (e.g., less than 3% drop on Speech Commands V1-12). We highlight that benefiting from the thinnable architecture and the optimized 1-bit implementation, BiFSMN can achieve an impressive $22.3\times$ speedup and $15.5\times$ storage-saving on real-world edge hardware.
+Related work: [BiFSMNv2](https://github.com/htqin/BiFSMNv2) is the later journal extension with dual-scale architecture, FID, and LPB.
 
 ## Datasets and Pretrained Models
 
@@ -16,11 +43,11 @@ We train and test BiFSMN on Google Speech Commands V1 and V2 datasets, which can
 
 - https://pytorch.org/audio/stable/_modules/torchaudio/datasets/speechcommands.html#SPEECHCOMMANDS
 
-And we also release a pretrained model on Speech Commands V1-12 task for our distillation.
+Distillation requires a full-precision teacher checkpoint for the matching Speech Commands task.
 
 ## Execution
 
-Our experiments are based on the fine-tuned full-precision BiFSMN_pre, which can be found [here](?????????????????). Complete running scripts is provided as follow
+Set `teacher_model_checkpoint_path` to your local full-precision teacher checkpoint before running. This README currently has no downloadable teacher-checkpoint link. The reference training command is:
 
 ```shell
 python3 train_speech_commands.py \
@@ -40,21 +67,22 @@ python3 train_speech_commands.py \
     --opt=sgd \
     --lr=5e-3 \
     --weight-decay=1e-4 \
-    --epoch=300 \
+    --epoch=300
 
 ```
 
 ## Citation
 
-If you find our work useful in your research, please consider citing:
+Please cite the published paper below. Open paper versions are linked at the top of this README.
 
-```shell
+```bibtex
 @inproceedings{qin2022bifsmn,
-  title     = {BiFSMN: Binary Neural Network for Keyword Spotting},
-  author    = {Qin, Haotong and Ma, Xudong and Ding, Yifu and Li, Xiaoyang and Zhang, Yang and Tian, Yao and Ma, Zejun and Luo, Jie and Liu, Xianglong},
-  booktitle = {Proceedings of the Thirty-First International Joint Conference on
-               Artificial Intelligence, {IJCAI-22}},
-  pages     = {4346--4352},
-  year      = {2022}
+  title = {BiFSMN: Binary Neural Network for Keyword Spotting},
+  author = {Haotong Qin and Xudong Ma and Yifu Ding and Xiaoyang Li and Yang Zhang and Yao Tian and Zejun Ma and Jie Luo and Xianglong Liu},
+  booktitle = {Proceedings of the Thirty-First International Joint Conference on Artificial Intelligence},
+  year = {2022},
+  pages = {4346--4352},
+  doi = {10.24963/ijcai.2022/603},
+  url = {https://www.ijcai.org/proceedings/2022/603}
 }
 ```
